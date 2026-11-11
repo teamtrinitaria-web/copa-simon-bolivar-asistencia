@@ -166,6 +166,9 @@ onload="mostrarMensaje('El iframe de Google Apps Script ha cargado.');"
 
   const puente = document.getElementById("puente");
 
+  let ventanaPuente = null;
+let origenPuente = "";
+  
   function mostrarMensaje(texto) {
     document.getElementById("mensaje").textContent = texto || "";
   }
