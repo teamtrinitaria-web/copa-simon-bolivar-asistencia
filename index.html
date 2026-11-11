@@ -81,5 +81,19 @@
       }
     }
   </script>
+  <script>
+  const pruebaPuente = document.createElement("iframe");
+
+  pruebaPuente.src =
+    "https://script.google.com/macros/s/AKfycbyIWGTH89PLTE4LYghDmLoy2Yumz8XFtPlOypfqTn0JOWU3z6b7NUH5hdi23St9rvsg/exec?puente=1";
+
+  pruebaPuente.style.display = "none";
+
+  document.body.appendChild(pruebaPuente);
+
+  pruebaPuente.onload = function() {
+    console.log("Puente de asistencia cargado.");
+  };
+</script>
 </body>
 </html>
