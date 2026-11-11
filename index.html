@@ -354,10 +354,6 @@ document.getElementById("clave").value = "";
     const estado = document.getElementById("estado");
     const boton = document.getElementById("activar");
 
-    if (!tokenSesion) {
-      estado.textContent = "Primero debes iniciar sesión.";
-      return;
-    }
 
     if (lectorQR) return;
 
