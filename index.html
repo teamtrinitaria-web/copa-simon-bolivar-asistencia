@@ -91,38 +91,20 @@
   <h1>COPA SIMÓN BOLÍVAR 2026</h1>
   <p>CONTROL DE ASISTENCIA</p>
 
-  <section id="acceso">
-    <h3>Acceso del personal</h3>
+  
+<section id="acceso">
+  <h3>Acceso privado</h3>
 
-    <input
-      type="email"
-      id="correo"
-      placeholder="Correo electrónico autorizado"
-      autocomplete="email"
-    >
+  <input
+    type="password"
+    id="clave"
+    placeholder="Introduce tu clave privada"
+    autocomplete="off"
+  >
 
-    <button id="btnEnviar" onclick="solicitarCodigo()">
-      ENVIAR CÓDIGO
-    </button>
-
-    <div id="seccionCodigo" class="oculto">
-      <hr class="separador">
-
-      <p>Introduce el código de 6 dígitos enviado a tu correo.</p>
-
-      <input
-        type="text"
-        id="codigo"
-        placeholder="Código de verificación"
-        inputmode="numeric"
-        maxlength="6"
-        autocomplete="one-time-code"
-      >
-
-      <button id="btnVerificar" onclick="verificarCodigo()">
-        VERIFICAR ACCESO
-      </button>
-    </div>
+  <button id="btnClave" onclick="verificarClave()">
+    INGRESAR AL ESCÁNER
+  </button>
   </section>
 
   <section id="personalVerificado" class="oculto">
@@ -197,6 +179,39 @@ if (event.origin !== "https://script.google.com" &&
     
     const respuesta = datos.respuesta || {};
 
+if (datos.tipo === "CLAVE_VERIFICADA") {
+  const boton = document.getElementById("btnClave");
+
+  boton.disabled = false;
+  boton.textContent = "INGRESAR AL ESCÁNER";
+
+  operacionPendiente = "";
+
+  const respuesta = datos.respuesta || {};
+
+  if (!respuesta.ok) {
+    mostrarMensaje("No se pudo verificar la clave.");
+    return;
+  }
+
+  tokenSesion = document.getElementById("clave").value;
+document.getElementById("clave").value = "";
+
+  document.getElementById("acceso")
+    .classList.add("oculto");
+
+  document.getElementById("personalVerificado")
+    .classList.remove("oculto");
+
+  document.getElementById("seccionEscaner")
+    .classList.remove("oculto");
+
+  document.getElementById("nombrePersonal")
+    .textContent = respuesta.correo;
+
+  mostrarMensaje("Acceso autorizado. Escáner preparado.");
+}
+    
     if (datos.tipo === "CODIGO_SOLICITADO") {
       const boton = document.getElementById("btnEnviar");
       boton.disabled = false;
