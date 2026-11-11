@@ -383,7 +383,7 @@ document.getElementById("clave").value = "";
   }
 
   function registrarAsistencia(idQR) {
-    if (procesandoQR || !tokenSesion) return;
+    if (procesandoQR) return;
 
     procesandoQR = true;
 
