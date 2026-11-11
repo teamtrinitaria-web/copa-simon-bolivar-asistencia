@@ -412,11 +412,10 @@ document.getElementById("clave").value = "";
 
     operacionPendiente = "REGISTRAR_ASISTENCIA";
 
-    enviarAlPuente("REGISTRAR_ASISTENCIA", {
-      token: tokenSesion,
-      idQR: idQR
-    });
-  }
+    enviarAlPuente("REGISTRAR_ASISTENCIA_CLAVE", {
+  clave: tokenSesion,
+  idQR: idQR
+});
 
   function mostrarResultado(respuesta) {
     const resultado = document.getElementById("resultado");
