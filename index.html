@@ -91,9 +91,15 @@
 
   document.body.appendChild(pruebaPuente);
 
-  pruebaPuente.onload = function() {
-    console.log("Puente de asistencia cargado.");
-  };
+ pruebaPuente.onload = function() {
+  document.getElementById("estado").textContent =
+    "El puente de Google Apps Script terminó de cargar.";
+};
+
+pruebaPuente.onerror = function() {
+  document.getElementById("estado").textContent =
+    "No se pudo cargar el puente de Google Apps Script.";
+};
 </script>
 </body>
 </html>
