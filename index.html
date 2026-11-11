@@ -286,7 +286,30 @@ document.getElementById("clave").value = "";
       "*"
     );
   });
-  
+
+  function verificarClave() {
+  if (operacionPendiente) return;
+
+  const clave = document.getElementById("clave").value.trim();
+
+  if (!clave) {
+    mostrarMensaje("Introduce tu clave privada.");
+    return;
+  }
+
+  const boton = document.getElementById("btnClave");
+
+  boton.disabled = true;
+  boton.textContent = "VERIFICANDO...";
+
+  mostrarMensaje("Comprobando clave...");
+
+  operacionPendiente = "VALIDAR_CLAVE";
+
+  enviarAlPuente("VALIDAR_CLAVE", {
+    clave: clave
+  });
+}
   function solicitarCodigo() {
     if (operacionPendiente) return;
 
