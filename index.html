@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Asistencia | Copa Simón Bolívar 2026</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #09182b;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    .contenedor {
+      max-width: 480px;
+      margin: 30px auto;
+      padding: 24px;
+      background: #132943;
+      border: 1px solid #c9a44c;
+      border-radius: 16px;
+    }
+    h1 { color: #e0bd68; }
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 15px;
+      background: #c9a44c;
+      color: #09182b;
+      border: 0;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    #lectorQR { width: 100%; margin-top: 20px; }
+    #estado { margin-top: 20px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <h1>COPA SIMÓN BOLÍVAR 2026</h1>
+    <p>CONTROL DE ASISTENCIA</p>
+
+    <div id="lectorQR"></div>
+
+    <button id="activar" onclick="activarCamara()">
+      ACTIVAR ESCÁNER
+    </button>
+
+    <div id="estado">Escáner preparado.</div>
+  </div>
+
+  <script>
+    let lector = null;
+
+    async function activarCamara() {
+      const estado = document.getElementById("estado");
+      const boton = document.getElementById("activar");
+
+      try {
+        estado.textContent = "Solicitando acceso a la cámara...";
+        boton.disabled = true;
+
+        lector = new Html5Qrcode("lectorQR");
+
+        await lector.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          texto => {
+            estado.textContent = "QR detectado: " + texto;
+          }
+        );
+
+        estado.textContent = "Cámara activa. Escanea un código QR.";
+      } catch (error) {
+        estado.textContent = "Error de cámara: " + error;
+        boton.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
