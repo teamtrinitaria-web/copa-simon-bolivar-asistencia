@@ -263,21 +263,22 @@ document.getElementById("clave").value = "";
     }
 
     if (datos.tipo === "ERROR") {
-      operacionPendiente = "";
-      procesandoQR = false;
+  operacionPendiente = "";
+  procesandoQR = false;
 
-      document.getElementById("btnEnviar").disabled = false;
-      document.getElementById("btnVerificar").disabled = false;
+  const botonClave = document.getElementById("btnClave");
 
-      document.getElementById("btnEnviar").textContent = "ENVIAR CÓDIGO";
-      document.getElementById("btnVerificar").textContent = "VERIFICAR ACCESO";
+  if (botonClave) {
+    botonClave.disabled = false;
+    botonClave.textContent = "INGRESAR AL ESCÁNER";
+  }
 
-      mostrarMensaje(
-        datos.respuesta && datos.respuesta.mensaje
-          ? datos.respuesta.mensaje
-          : "No se pudo completar la operación. Inténtalo nuevamente."
-      );
-    }
+  mostrarMensaje(
+    datos.respuesta && datos.respuesta.mensaje
+      ? datos.respuesta.mensaje
+      : "No se pudo completar la operación. Inténtalo nuevamente."
+  );
+}
   });
 
   puente.addEventListener("load", function() {
