@@ -182,8 +182,8 @@
   }
 
   window.addEventListener("message", function(event) {
-    if (event.source !== puente.contentWindow) return;
-
+if (event.origin !== "https://script.google.com" &&
+    !event.origin.endsWith(".googleusercontent.com")) return;
     const datos = event.data || {};
 
     if (datos.tipo === "PUENTE_LISTO") {
