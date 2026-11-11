@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Asistencia | Copa Simón Bolívar 2026</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
+
   <style>
     body {
       margin: 0;
@@ -15,6 +16,7 @@
       font-family: Arial, sans-serif;
       text-align: center;
     }
+
     .contenedor {
       max-width: 480px;
       margin: 30px auto;
@@ -23,7 +25,19 @@
       border: 1px solid #c9a44c;
       border-radius: 16px;
     }
+
     h1 { color: #e0bd68; }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      margin-top: 12px;
+      border-radius: 8px;
+      border: 1px solid #c9a44c;
+      font-size: 16px;
+    }
+
     button {
       width: 100%;
       padding: 15px;
@@ -34,72 +48,359 @@
       border-radius: 8px;
       font-weight: bold;
       font-size: 16px;
+      cursor: pointer;
     }
-    #lectorQR { width: 100%; margin-top: 20px; }
-    #estado { margin-top: 20px; line-height: 1.5; }
+
+    button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    #lectorQR {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    #estado {
+      margin-top: 20px;
+      line-height: 1.5;
+    }
+
+    .oculto { display: none; }
+
+    .resultado {
+      margin-top: 18px;
+      padding: 15px;
+      border: 1px solid #c9a44c;
+      border-radius: 10px;
+      line-height: 1.6;
+    }
+
+    .separador {
+      border: 0;
+      border-top: 1px solid #38516c;
+      margin: 22px 0;
+    }
   </style>
 </head>
+
 <body>
-  <div class="contenedor">
-    <h1>COPA SIMÓN BOLÍVAR 2026</h1>
-    <p>CONTROL DE ASISTENCIA</p>
+
+<div class="contenedor">
+
+  <h1>COPA SIMÓN BOLÍVAR 2026</h1>
+  <p>CONTROL DE ASISTENCIA</p>
+
+  <section id="acceso">
+    <h3>Acceso del personal</h3>
+
+    <input
+      type="email"
+      id="correo"
+      placeholder="Correo electrónico autorizado"
+      autocomplete="email"
+    >
+
+    <button id="btnEnviar" onclick="solicitarCodigo()">
+      ENVIAR CÓDIGO
+    </button>
+
+    <div id="seccionCodigo" class="oculto">
+      <hr class="separador">
+
+      <p>Introduce el código de 6 dígitos enviado a tu correo.</p>
+
+      <input
+        type="text"
+        id="codigo"
+        placeholder="Código de verificación"
+        inputmode="numeric"
+        maxlength="6"
+        autocomplete="one-time-code"
+      >
+
+      <button id="btnVerificar" onclick="verificarCodigo()">
+        VERIFICAR ACCESO
+      </button>
+    </div>
+  </section>
+
+  <section id="personalVerificado" class="oculto">
+    <p>Personal autorizado:</p>
+    <strong id="nombrePersonal"></strong>
+  </section>
+
+  <section id="seccionEscaner" class="oculto">
+    <hr class="separador">
+
+    <h3>Escáner de jugadores</h3>
 
     <div id="lectorQR"></div>
 
-    <button id="activar" onclick="activarCamara()">
+    <button id="activar" onclick="activarEscaner()">
       ACTIVAR ESCÁNER
     </button>
 
     <div id="estado">Escáner preparado.</div>
-  </div>
 
-  <script>
-    let lector = null;
+    <div id="resultado" class="resultado oculto"></div>
+  </section>
 
-    async function activarCamara() {
-      const estado = document.getElementById("estado");
-      const boton = document.getElementById("activar");
+  <p id="mensaje" aria-live="polite"></p>
 
-      try {
-        estado.textContent = "Solicitando acceso a la cámara...";
-        boton.disabled = true;
+</div>
 
-        lector = new Html5Qrcode("lectorQR");
+<iframe
+  id="puente"
+  src="https://script.google.com/macros/s/AKfycbyIWGTH89PLTE4LYghDmLoy2Yumz8XFtPlOypfqTn0JOWU3z6b7NUH5hdi23St9rvsg/exec?puente=1"
+  style="display:none"
+></iframe>
 
-        await lector.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 220, height: 220 } },
-          texto => {
-            estado.textContent = "QR detectado: " + texto;
-          }
-        );
+<script>
+  let tokenSesion = "";
+  let correoVerificado = "";
+  let lectorQR = null;
+  let procesandoQR = false;
+  let operacionPendiente = "";
 
-        estado.textContent = "Cámara activa. Escanea un código QR.";
-      } catch (error) {
-        estado.textContent = "Error de cámara: " + error;
-        boton.disabled = false;
+  const puente = document.getElementById("puente");
+
+  function mostrarMensaje(texto) {
+    document.getElementById("mensaje").textContent = texto || "";
+  }
+
+  function enviarAlPuente(tipo, datos) {
+    if (!puente.contentWindow) {
+      mostrarMensaje("No se pudo establecer la conexión.");
+      return;
+    }
+
+    puente.contentWindow.postMessage(
+      { tipo: tipo, ...datos },
+      "*"
+    );
+  }
+
+  window.addEventListener("message", function(event) {
+    if (event.source !== puente.contentWindow) return;
+
+    const datos = event.data || {};
+    const respuesta = datos.respuesta || {};
+
+    if (datos.tipo === "CODIGO_SOLICITADO") {
+      const boton = document.getElementById("btnEnviar");
+      boton.disabled = false;
+      boton.textContent = "ENVIAR CÓDIGO";
+      operacionPendiente = "";
+
+      mostrarMensaje(respuesta.mensaje);
+
+      if (respuesta.ok) {
+        document.getElementById("seccionCodigo")
+          .classList.remove("oculto");
       }
     }
-  </script>
-  <script>
-  const pruebaPuente = document.createElement("iframe");
 
-  pruebaPuente.src =
-    "https://script.google.com/macros/s/AKfycbyIWGTH89PLTE4LYghDmLoy2Yumz8XFtPlOypfqTn0JOWU3z6b7NUH5hdi23St9rvsg/exec?puente=1";
+    if (datos.tipo === "CODIGO_VERIFICADO") {
+      const boton = document.getElementById("btnVerificar");
+      boton.disabled = false;
+      boton.textContent = "VERIFICAR ACCESO";
+      operacionPendiente = "";
 
-  pruebaPuente.style.display = "none";
+      if (!respuesta.ok) {
+        mostrarMensaje(respuesta.mensaje);
+        return;
+      }
 
-  document.body.appendChild(pruebaPuente);
+      tokenSesion = respuesta.token;
+      correoVerificado = respuesta.correo;
 
- pruebaPuente.onload = function() {
-  document.getElementById("estado").textContent =
-    "El puente de Google Apps Script terminó de cargar.";
-};
+      document.getElementById("acceso")
+        .classList.add("oculto");
 
-pruebaPuente.onerror = function() {
-  document.getElementById("estado").textContent =
-    "No se pudo cargar el puente de Google Apps Script.";
-};
+      document.getElementById("personalVerificado")
+        .classList.remove("oculto");
+
+      document.getElementById("seccionEscaner")
+        .classList.remove("oculto");
+
+      document.getElementById("nombrePersonal")
+        .textContent = correoVerificado;
+
+      mostrarMensaje("Acceso autorizado. Escáner preparado.");
+    }
+
+    if (datos.tipo === "ASISTENCIA_REGISTRADA") {
+      operacionPendiente = "";
+      procesandoQR = false;
+
+      mostrarResultado(respuesta);
+    }
+
+    if (datos.tipo === "ERROR") {
+      operacionPendiente = "";
+      procesandoQR = false;
+
+      document.getElementById("btnEnviar").disabled = false;
+      document.getElementById("btnVerificar").disabled = false;
+
+      document.getElementById("btnEnviar").textContent = "ENVIAR CÓDIGO";
+      document.getElementById("btnVerificar").textContent = "VERIFICAR ACCESO";
+
+      mostrarMensaje(
+        datos.respuesta && datos.respuesta.mensaje
+          ? datos.respuesta.mensaje
+          : "No se pudo completar la operación. Inténtalo nuevamente."
+      );
+    }
+  });
+
+  function solicitarCodigo() {
+    if (operacionPendiente) return;
+
+    const correo = document.getElementById("correo")
+      .value.trim().toLowerCase();
+
+    if (!correo) {
+      mostrarMensaje("Introduce tu correo electrónico.");
+      return;
+    }
+
+    const boton = document.getElementById("btnEnviar");
+
+    boton.disabled = true;
+    boton.textContent = "ENVIANDO...";
+    mostrarMensaje("Solicitando código de acceso...");
+
+    operacionPendiente = "SOLICITAR_CODIGO";
+
+    enviarAlPuente("SOLICITAR_CODIGO", {
+      correo: correo
+    });
+  }
+
+  function verificarCodigo() {
+    if (operacionPendiente) return;
+
+    const correo = document.getElementById("correo")
+      .value.trim().toLowerCase();
+
+    const codigo = document.getElementById("codigo")
+      .value.trim();
+
+    if (!/^\d{6}$/.test(codigo)) {
+      mostrarMensaje("Introduce el código de 6 dígitos.");
+      return;
+    }
+
+    const boton = document.getElementById("btnVerificar");
+
+    boton.disabled = true;
+    boton.textContent = "VERIFICANDO...";
+    mostrarMensaje("Verificando acceso...");
+
+    operacionPendiente = "VERIFICAR_CODIGO";
+
+    enviarAlPuente("VERIFICAR_CODIGO", {
+      correo: correo,
+      codigo: codigo
+    });
+  }
+
+  async function activarEscaner() {
+    const estado = document.getElementById("estado");
+    const boton = document.getElementById("activar");
+
+    if (!tokenSesion) {
+      estado.textContent = "Primero debes iniciar sesión.";
+      return;
+    }
+
+    if (lectorQR) return;
+
+    try {
+      boton.disabled = true;
+      estado.textContent = "Solicitando acceso a la cámara...";
+
+      lectorQR = new Html5Qrcode("lectorQR");
+
+      await lectorQR.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: { width: 220, height: 220 }
+        },
+        function(textoQR) {
+          registrarAsistencia(textoQR);
+        }
+      );
+
+      estado.textContent = "Cámara activa. Escanea un código QR.";
+    } catch (error) {
+      estado.textContent = "Error de cámara: " + error;
+      lectorQR = null;
+      boton.disabled = false;
+    }
+  }
+
+  function registrarAsistencia(idQR) {
+    if (procesandoQR || !tokenSesion) return;
+
+    procesandoQR = true;
+
+    document.getElementById("estado").textContent =
+      "QR detectado. Validando asistencia...";
+
+    document.getElementById("resultado")
+      .classList.add("oculto");
+
+    operacionPendiente = "REGISTRAR_ASISTENCIA";
+
+    enviarAlPuente("REGISTRAR_ASISTENCIA", {
+      token: tokenSesion,
+      idQR: idQR
+    });
+  }
+
+  function mostrarResultado(respuesta) {
+    const resultado = document.getElementById("resultado");
+
+    resultado.replaceChildren();
+
+    const titulo = document.createElement("strong");
+    titulo.textContent = respuesta.ok
+      ? "ASISTENCIA REGISTRADA"
+      : "AVISO";
+
+    const mensaje = document.createElement("p");
+    mensaje.textContent = respuesta.mensaje || "";
+
+    resultado.append(titulo, mensaje);
+
+    if (respuesta.nombre) {
+      const nombre = document.createElement("p");
+      nombre.textContent = "Jugador: " + respuesta.nombre;
+      resultado.appendChild(nombre);
+    }
+
+    if (respuesta.equipo) {
+      const equipo = document.createElement("p");
+      equipo.textContent = "Equipo: " + respuesta.equipo;
+      resultado.appendChild(equipo);
+    }
+
+    resultado.classList.remove("oculto");
+
+    document.getElementById("estado").textContent =
+      "Listo para el siguiente jugador.";
+
+    mostrarMensaje("");
+
+    setTimeout(function() {
+      procesandoQR = false;
+    }, 1800);
+  }
 </script>
+
 </body>
 </html>
