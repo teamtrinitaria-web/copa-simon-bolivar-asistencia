@@ -261,6 +261,13 @@ if (event.origin !== "https://script.google.com" &&
     }
   });
 
+  puente.addEventListener("load", function() {
+    puente.contentWindow.postMessage(
+      { tipo: "COMPROBAR_PUENTE" },
+      "*"
+    );
+  });
+  
   function solicitarCodigo() {
     if (operacionPendiente) return;
 
