@@ -185,6 +185,12 @@
     if (event.source !== puente.contentWindow) return;
 
     const datos = event.data || {};
+
+    if (datos.tipo === "PUENTE_LISTO") {
+      mostrarMensaje("Conexión con Google Apps Script establecida.");
+      return;
+    }
+    
     const respuesta = datos.respuesta || {};
 
     if (datos.tipo === "CODIGO_SOLICITADO") {
