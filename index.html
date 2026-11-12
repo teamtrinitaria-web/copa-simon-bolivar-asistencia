@@ -127,16 +127,12 @@ onload="mostrarMensaje('El iframe de Google Apps Script ha cargado.');"
 ></iframe>
 
 <script>
-  let tokenSesion = "";
-  let correoVerificado = "";
+  
   let lectorQR = null;
   let procesandoQR = false;
   let operacionPendiente = "";
 
   const puente = document.getElementById("puente");
-
-  let ventanaPuente = null;
-let origenPuente = "";
   
   function mostrarMensaje(texto) {
     document.getElementById("mensaje").textContent = texto || "";
@@ -195,53 +191,7 @@ window.addEventListener("message", function(event) {
     );
   });
 
-  function verificarClave() {
-  if (operacionPendiente) return;
-
-  const clave = document.getElementById("clave").value.trim();
-
-  if (!clave) {
-    mostrarMensaje("Introduce tu clave privada.");
-    return;
-  }
-
-  const boton = document.getElementById("btnClave");
-
-  boton.disabled = true;
-  boton.textContent = "VERIFICANDO...";
-
-  mostrarMensaje("Comprobando clave...");
-
-  operacionPendiente = "VALIDAR_CLAVE";
-
-  enviarAlPuente("VALIDAR_CLAVE", {
-    clave: clave
-  });
-}
-  function solicitarCodigo() {
-    if (operacionPendiente) return;
-
-    const correo = document.getElementById("correo")
-      .value.trim().toLowerCase();
-
-    if (!correo) {
-      mostrarMensaje("Introduce tu correo electrónico.");
-      return;
-    }
-
-    const boton = document.getElementById("btnEnviar");
-
-    boton.disabled = true;
-    boton.textContent = "ENVIANDO...";
-    mostrarMensaje("Solicitando código de acceso...");
-
-    operacionPendiente = "SOLICITAR_CODIGO";
-
-    enviarAlPuente("SOLICITAR_CODIGO", {
-      correo: correo
-    });
-  }
-
+  
   function verificarCodigo() {
     if (operacionPendiente) return;
 
