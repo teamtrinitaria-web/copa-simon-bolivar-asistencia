@@ -192,32 +192,7 @@ window.addEventListener("message", function(event) {
   });
 
   
-  function verificarCodigo() {
-    if (operacionPendiente) return;
-
-    const correo = document.getElementById("correo")
-      .value.trim().toLowerCase();
-
-    const codigo = document.getElementById("codigo")
-      .value.trim();
-
-    if (!/^\d{6}$/.test(codigo)) {
-      mostrarMensaje("Introduce el código de 6 dígitos.");
-      return;
-    }
-
-    const boton = document.getElementById("btnVerificar");
-
-    boton.disabled = true;
-    boton.textContent = "VERIFICANDO...";
-    mostrarMensaje("Verificando acceso...");
-
-    operacionPendiente = "VERIFICAR_CODIGO";
-
-    enviarAlPuente("VERIFICAR_CODIGO", {
-      correo: correo,
-      codigo: codigo
-    });
+ 
   }
 
   async function activarEscaner() {
