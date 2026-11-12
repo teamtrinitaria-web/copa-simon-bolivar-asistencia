@@ -149,10 +149,11 @@ onload="mostrarMensaje('El iframe de Google Apps Script ha cargado.');"
 
   
 window.addEventListener("message", function(event) {
-  if (
-    event.origin !== "https://script.google.com" &&
-    !event.origin.endsWith(".googleusercontent.com")
-  ) return;
+if (
+  event.origin !== "https://script.google.com" &&
+  !event.origin.endsWith(".googleusercontent.com") &&
+  !event.origin.endsWith(".google.com")
+) return;
 
   const datos = event.data || {};
   const respuesta = datos.respuesta || {};
