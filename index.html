@@ -154,119 +154,39 @@ let origenPuente = "";
     );
   }
 
-  window.addEventListener("message", function(event) {
-if (event.origin !== "https://script.google.com" &&
-    !event.origin.endsWith(".googleusercontent.com")) return;
-    const datos = event.data || {};
+  
+window.addEventListener("message", function(event) {
+  if (
+    event.origin !== "https://script.google.com" &&
+    !event.origin.endsWith(".googleusercontent.com")
+  ) return;
 
-    if (datos.tipo === "PUENTE_LISTO") {
-      mostrarMensaje("Conexión con Google Apps Script establecida.");
-      return;
-    }
-    
-    const respuesta = datos.respuesta || {};
-
-if (datos.tipo === "CLAVE_VERIFICADA") {
-  const boton = document.getElementById("btnClave");
-
-  boton.disabled = false;
-  boton.textContent = "INGRESAR AL ESCÁNER";
-
-  operacionPendiente = "";
-
+  const datos = event.data || {};
   const respuesta = datos.respuesta || {};
 
-  if (!respuesta.ok) {
-    mostrarMensaje("No se pudo verificar la clave.");
+  if (datos.tipo === "PUENTE_LISTO") {
+    mostrarMensaje("Conexión con Google Apps Script establecida.");
     return;
   }
 
-  tokenSesion = document.getElementById("clave").value;
-document.getElementById("clave").value = "";
-
-  document.getElementById("acceso")
-    .classList.add("oculto");
-
-  document.getElementById("personalVerificado")
-    .classList.remove("oculto");
-
-  document.getElementById("seccionEscaner")
-    .classList.remove("oculto");
-
-  document.getElementById("nombrePersonal")
-    .textContent = respuesta.correo;
-
-  mostrarMensaje("Acceso autorizado. Escáner preparado.");
-}
-    
-    if (datos.tipo === "CODIGO_SOLICITADO") {
-      const boton = document.getElementById("btnEnviar");
-      boton.disabled = false;
-      boton.textContent = "ENVIAR CÓDIGO";
-      operacionPendiente = "";
-
-      mostrarMensaje(respuesta.mensaje);
-
-      if (respuesta.ok) {
-        document.getElementById("seccionCodigo")
-          .classList.remove("oculto");
-      }
-    }
-
-    if (datos.tipo === "CODIGO_VERIFICADO") {
-      const boton = document.getElementById("btnVerificar");
-      boton.disabled = false;
-      boton.textContent = "VERIFICAR ACCESO";
-      operacionPendiente = "";
-
-      if (!respuesta.ok) {
-        mostrarMensaje(respuesta.mensaje);
-        return;
-      }
-
-      tokenSesion = respuesta.token;
-      correoVerificado = respuesta.correo;
-
-      document.getElementById("acceso")
-        .classList.add("oculto");
-
-      document.getElementById("personalVerificado")
-        .classList.remove("oculto");
-
-      document.getElementById("seccionEscaner")
-        .classList.remove("oculto");
-
-      document.getElementById("nombrePersonal")
-        .textContent = correoVerificado;
-
-      mostrarMensaje("Acceso autorizado. Escáner preparado.");
-    }
-
-    if (datos.tipo === "ASISTENCIA_REGISTRADA") {
-      operacionPendiente = "";
-      procesandoQR = false;
-
-      mostrarResultado(respuesta);
-    }
-
-    if (datos.tipo === "ERROR") {
-  operacionPendiente = "";
-  procesandoQR = false;
-
-  const botonClave = document.getElementById("btnClave");
-
-  if (botonClave) {
-    botonClave.disabled = false;
-    botonClave.textContent = "INGRESAR AL ESCÁNER";
+  if (datos.tipo === "ASISTENCIA_REGISTRADA") {
+    operacionPendiente = "";
+    procesandoQR = false;
+    mostrarResultado(respuesta);
+    return;
   }
 
-  mostrarMensaje(
-    datos.respuesta && datos.respuesta.mensaje
-      ? datos.respuesta.mensaje
-      : "No se pudo completar la operación. Inténtalo nuevamente."
-  );
-}
-  });
+  if (datos.tipo === "ERROR") {
+    operacionPendiente = "";
+    procesandoQR = false;
+
+    mostrarMensaje(
+      respuesta.mensaje ||
+      "No se pudo completar el registro de asistencia."
+    );
+  }
+});
+
 
   puente.addEventListener("load", function() {
     puente.contentWindow.postMessage(
